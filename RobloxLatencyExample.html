@@ -1,1 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
+<title>ToonyTime Network Demo</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    touch-action:none;
+}
+
+body{
+    margin:0;
+    background:#080808;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#app{
+    width:100%;
+    max-width:1200px;
+    padding:16px;
+}
+
+/* HEADER */
+
+.header{
+    text-align:center;
+    margin-bottom:15px;
+}
+
+.brand{
+    color:#ff7518;
+    font-weight:bold;
+    font-size:11px;
+    letter-spacing:4px;
+}
+
+h1{
+    margin:5px 0 3px;
+    font-size:25px;
+}
+
+.subtitle{
+    color:#777;
+    font-size:12px;
+}
+
+/* NETWORK */
+
+.networkLayout{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+/* PHONE */
+
+.phone{
+    width:43%;
+    max-width:510px;
+    aspect-ratio:16/9;
+
+    background:#030303;
+
+    border:5px solid #292929;
+    border-radius:23px;
+
+    padding:5px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.5);
+}
+
+.screen{
+    width:100%;
+    height:100%;
+
+    position:relative;
+    overflow:hidden;
+
+    border-radius:15px;
+
+    background:
+        linear-gradient(#202020 1px,transparent 1px),
+        linear-gradient(90deg,#202020 1px,transparent 1px);
+
+    background-size:30px 30px;
+    background-color:#121212;
+}
+
+/* PHONE HEADER */
+
+.phoneHeader{
+    position:absolute;
+
+    top:7px;
+    left:7px;
+    right:7px;
+
+    display:flex;
+    justify-content:space-between;
+
+    z-index:30;
+
+    font-size:9px;
+}
+
+.phoneName{
+    background:rgba(0,0,0,.8);
+
+    padding:5px 7px;
+    border-radius:5px;
+
+    font-weight:bold;
+}
+
+.status{
+    background:rgba(0,0,0,.8);
+
+    padding:5px 7px;
+    border-radius:5px;
+
+    color:#55ff88;
+}
+
+.status.warning{
+    color:#ff5555;
+}
+
+/* SERVER */
+
+.serverArea{
+    width:95px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+
+    gap:7px;
+}
+
+.server{
+    width:68px;
+    height:68px;
+
+    border:2px solid #ff7518;
+    border-radius:10px;
+
+    background:#151515;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    align-items:center;
+
+    box-shadow:0 0 20px rgba(255,117,24,.15);
+}
+
+.serverIcon{
+    font-size:22px;
+}
+
+.serverText{
+    color:#ff7518;
+    font-size:8px;
+    font-weight:bold;
+}
+
+.serverStatus{
+    font-size:8px;
+    color:#777;
+    text-align:center;
+}
+
+/* NETWORK LINES */
+
+.line{
+    width:65px;
+    height:4px;
+
+    background:#282828;
+
+    position:relative;
+    overflow:hidden;
+
+    border-radius:5px;
+}
+
+.packet{
+    position:absolute;
+
+    width:12px;
+    height:4px;
+
+    background:#ff7518;
+
+    left:-15px;
+
+    border-radius:5px;
+
+    animation:packet 1s linear infinite;
+}
+
+.packet.blue{
+    background:#55aaff;
+    animation-delay:.45s;
+}
+
+@keyframes packet{
+
+    from{
+        left:-15px;
+    }
+
+    to{
+        left:65px;
+    }
+
+}
+
+/* PUMPKIN */
+
+.pumpkin{
+    position:absolute;
+
+    width:43px;
+    height:40px;
+
+    background:#ff7518;
+
+    border-radius:45% 45% 42% 42%;
+
+    z-index:10;
+
+    box-shadow:0 0 18px rgba(255,117,24,.35);
+
+    pointer-events:none;
+}
+
+/* STEM */
+
+.pumpkin .stem{
+    position:absolute;
+
+    width:11px;
+    height:7px;
+
+    background:#292929;
+
+    top:-6px;
+    left:16px;
+
+    border-radius:5px 5px 2px 2px;
+
+    transform:rotate(-7deg);
+}
+
+/* FACE */
+
+.eye{
+    position:absolute;
+
+    width:6px;
+    height:8px;
+
+    background:#161616;
+
+    border-radius:50%;
+
+    top:13px;
+}
+
+.eye.left{
+    left:10px;
+}
+
+.eye.right{
+    right:10px;
+}
+
+.mouth{
+    position:absolute;
+
+    width:17px;
+    height:7px;
+
+    left:13px;
+    top:23px;
+
+    border-bottom:3px solid #161616;
+
+    border-radius:50%;
+}
+
+/* HITBOX */
+
+.position{
+    position:absolute;
+
+    width:59px;
+    height:58px;
+
+    border:2px dashed;
+
+    border-radius:8px;
+
+    z-index:5;
+
+    pointer-events:none;
+}
+
+.localPosition{
+    border-color:#ff7518;
+    background:rgba(255,117,24,.08);
+}
+
+.remotePosition{
+    border-color:#55aaff;
+    background:rgba(85,170,255,.08);
+}
+
+/* LABEL */
+
+.posLabel{
+    position:absolute;
+
+    z-index:20;
+
+    padding:4px 6px;
+
+    background:rgba(0,0,0,.75);
+
+    border-radius:4px;
+
+    font-size:7px;
+
+    white-space:nowrap;
+
+    pointer-events:none;
+}
+
+/* STATS */
+
+.stats{
+    position:absolute;
+
+    bottom:7px;
+    left:7px;
+    right:7px;
+
+    display:flex;
+    gap:5px;
+
+    z-index:30;
+}
+
+.stat{
+    flex:1;
+
+    background:rgba(0,0,0,.8);
+
+    border-radius:5px;
+
+    padding:5px;
+
+    text-align:center;
+
+    font-size:7px;
+
+    color:#777;
+}
+
+.stat strong{
+    display:block;
+
+    color:#ff7518;
+
+    font-size:9px;
+
+    margin-top:2px;
+}
+
+/* DESYNC */
+
+.desync{
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%) scale(.7);
+
+    opacity:0;
+
+    z-index:50;
+
+    background:#ff3b30;
+
+    padding:9px 14px;
+
+    border-radius:7px;
+
+    font-weight:bold;
+
+    font-size:12px;
+
+    transition:.15s;
+
+    white-space:nowrap;
+}
+
+.desync.active{
+    opacity:1;
+
+    transform:translate(-50%,-50%) scale(1);
+}
+
+/* CONTROLS */
+
+.controls{
+    margin-top:15px;
+
+    display:flex;
+
+    justify-content:center;
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+}
+
+/* JOYSTICK */
+
+#joystick{
+    width:115px;
+    height:115px;
+
+    border-radius:50%;
+
+    background:#151515;
+
+    border:2px solid #333;
+
+    position:relative;
+
+    box-shadow:inset 0 0 20px #000;
+}
+
+#stick{
+    width:50px;
+    height:50px;
+
+    position:absolute;
+
+    left:31px;
+    top:31px;
+
+    border-radius:50%;
+
+    background:#ff7518;
+
+    border:3px solid #ff9a55;
+
+    box-shadow:0 5px 15px #000;
+}
+
+/* BUTTONS */
+
+.buttons{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:7px;
+}
+
+button{
+    border:1px solid #333;
+
+    background:#171717;
+
+    color:#aaa;
+
+    padding:9px 14px;
+
+    border-radius:6px;
+
+    font-size:10px;
+
+    font-weight:bold;
+}
+
+button.active{
+    background:#ff7518;
+
+    color:#111;
+
+    border-color:#ff7518;
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+/* EXPLANATION */
+
+.explanation{
+    margin:13px auto 0;
+
+    max-width:650px;
+
+    text-align:center;
+
+    color:#666;
+
+    font-size:10px;
+
+    line-height:1.5;
+}
+
+/* MOBILE */
+
+@media(max-width:750px){
+
+    #app{
+        padding:7px;
+    }
+
+    h1{
+        font-size:18px;
+    }
+
+    .subtitle{
+        font-size:9px;
+    }
+
+    .phone{
+        border-width:3px;
+        border-radius:15px;
+    }
+
+    .networkLayout{
+        gap:4px;
+    }
+
+    .serverArea{
+        width:45px;
+    }
+
+    .server{
+        width:42px;
+        height:42px;
+    }
+
+    .serverIcon{
+        font-size:14px;
+    }
+
+    .serverText{
+        font-size:5px;
+    }
+
+    .serverStatus{
+        display:none;
+    }
+
+    .line{
+        width:25px;
+    }
+
+    .packet{
+        width:7px;
+    }
+
+    .phoneHeader{
+        font-size:5px;
+    }
+
+    .phoneName,
+    .status{
+        padding:3px 4px;
+    }
+
+    .pumpkin{
+        width:31px;
+        height:29px;
+    }
+
+    .eye{
+        width:4px;
+        height:6px;
+        top:10px;
+    }
+
+    .eye.left{
+        left:7px;
+    }
+
+    .eye.right{
+        right:7px;
+    }
+
+    .mouth{
+        width:12px;
+        height:5px;
+        left:9px;
+        top:17px;
+    }
+
+    .position{
+        width:43px;
+        height:43px;
+    }
+
+    .posLabel{
+        font-size:5px;
+    }
+
+    .stat{
+        font-size:5px;
+        padding:3px;
+    }
+
+    .stat strong{
+        font-size:6px;
+    }
+
+}
+
+
+/* =========================
+   EXTRA X/Y MOVEMENT VISUAL
+========================= */
+
+.directionHint{
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    color:#333;
+
+    font-size:9px;
+
+    pointer-events:none;
+
+    text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <div class="header">
+
+        <div class="brand">
+            TOONYTIME NETWORK LAB
+        </div>
+
+        <h1>
+            WHAT DOES NETWORK LAG ACTUALLY DO?
+        </h1>
+
+        <div class="subtitle">
+            One player • One server • Two different screens
+        </div>
+
+    </div>
+
+
+    <div class="networkLayout">
+
+
+        <!-- =====================
+             PHONE 1
+        ====================== -->
+
+        <div class="phone">
+
+            <div class="screen" id="screen1">
+
+                <div class="phoneHeader">
+
+                    <div class="phoneName">
+                        PHONE #1 • YOUR SCREEN
+                    </div>
+
+                    <div class="status">
+                        ● CONNECTED
+                    </div>
+
+                </div>
+
+
+                <div class="directionHint">
+                    MOVE<br>
+                    ANY DIRECTION
+                </div>
+
+
+                <div
+                    class="position localPosition"
+                    id="localPosition">
+                </div>
+
+
+                <div
+                    class="pumpkin"
+                    id="localPumpkin">
+
+                    <div class="stem"></div>
+
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+
+                    <div class="mouth"></div>
+
+                </div>
+
+
+                <div
+                    class="posLabel"
+                    id="localLabel">
+
+                    YOUR POSITION
+
+                </div>
+
+
+                <div class="stats">
+
+                    <div class="stat">
+
+                        LOCAL POSITION
+
+                        <strong id="localCoords">
+                            0, 0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        UPDATE
+
+                        <strong>
+                            INSTANT
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================
+             SERVER
+        ====================== -->
+
+        <div class="serverArea">
+
+            <div class="line">
+
+                <div class="packet"></div>
+
+            </div>
+
+
+            <div class="server">
+
+                <div class="serverIcon">
+                    🖥️
+                </div>
+
+                <div class="serverText">
+                    SERVER
+                </div>
+
+            </div>
+
+
+            <div class="line">
+
+                <div class="packet blue"></div>
+
+            </div>
+
+
+            <div class="serverStatus">
+                POSITION<br>
+                DATA
+            </div>
+
+        </div>
+
+
+        <!-- =====================
+             PHONE 2
+        ====================== -->
+
+        <div class="phone">
+
+            <div class="screen" id="screen2">
+
+                <div class="phoneHeader">
+
+                    <div class="phoneName">
+                        PHONE #2 • OTHER SCREEN
+                    </div>
+
+                    <div
+                        class="status"
+                        id="remoteStatus">
+
+                        ● CONNECTED
+
+                    </div>
+
+                </div>
+
+
+                <div class="directionHint">
+                    RECEIVING<br>
+                    POSITION DATA
+                </div>
+
+
+                <div
+                    class="position remotePosition"
+                    id="remotePosition">
+                </div>
+
+
+                <div
+                    class="pumpkin"
+                    id="remotePumpkin">
+
+                    <div class="stem"></div>
+
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
+
+                    <div class="mouth"></div>
+
+                </div>
+
+
+                <div
+                    class="posLabel"
+                    id="remoteLabel">
+
+                    RECEIVED POSITION
+
+                </div>
+
+
+                <div
+                    class="desync"
+                    id="desync">
+
+                    ⚠ DESYNC
+
+                </div>
+
+
+                <div class="stats">
+
+                    <div class="stat">
+
+                        RECEIVED POSITION
+
+                        <strong id="remoteCoords">
+                            0, 0
+                        </strong>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        PING
+
+                        <strong id="ping">
+                            45ms
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================
+         CONTROLS
+    ====================== -->
+
+    <div class="controls">
+
+        <div id="joystick">
+
+            <div id="stick"></div>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                id="normalButton"
+                class="active">
+
+                NORMAL NETWORK
+
+            </button>
+
+
+            <button
+                id="lagButton">
+
+                HIGH LATENCY
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="explanation">
+
+        Move the pumpkin in any direction.
+        Your screen updates immediately while the other screen
+        receives the position later.
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const screen1 =
+    document.getElementById("screen1");
+
+const screen2 =
+    document.getElementById("screen2");
+
+const localPumpkin =
+    document.getElementById("localPumpkin");
+
+const remotePumpkin =
+    document.getElementById("remotePumpkin");
+
+const localPosition =
+    document.getElementById("localPosition");
+
+const remotePosition =
+    document.getElementById("remotePosition");
+
+const localLabel =
+    document.getElementById("localLabel");
+
+const remoteLabel =
+    document.getElementById("remoteLabel");
+
+const localCoords =
+    document.getElementById("localCoords");
+
+const remoteCoords =
+    document.getElementById("remoteCoords");
+
+const ping =
+    document.getElementById("ping");
+
+const remoteStatus =
+    document.getElementById("remoteStatus");
+
+const desync =
+    document.getElementById("desync");
+
+const joystick =
+    document.getElementById("joystick");
+
+const stick =
+    document.getElementById("stick");
+
+const normalButton =
+    document.getElementById("normalButton");
+
+const lagButton =
+    document.getElementById("lagButton");
+
+
+/* =========================
+   PLAYER POSITION
+========================= */
+
+let x = 100;
+let y = 90;
+
+
+/* =========================
+   OTHER DEVICE POSITION
+========================= */
+
+let remoteX = 100;
+let remoteY = 90;
+
+
+/* =========================
+   NETWORK
+========================= */
+
+let latency = 0.13;
+
+let highLatency = false;
+
+
+/* =========================
+   JOYSTICK
+========================= */
+
+let joyX = 0;
+let joyY = 0;
+
+let dragging = false;
+
+
+/* =========================
+   CLAMP
+========================= */
+
+function clamp(value,min,max){
+
+    return Math.max(
+        min,
+        Math.min(max,value)
+    );
+
+}
+
+
+/* =========================
+   MOVE ELEMENT
+========================= */
+
+function move(element,x,y){
+
+    element.style.left =
+        x + "px";
+
+    element.style.top =
+        y + "px";
+
+}
+
+
+/* =========================
+   JOYSTICK
+========================= */
+
+function updateJoystick(e){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width / 2;
+
+    const centerY =
+        rect.top +
+        rect.height / 2;
+
+
+    let dx =
+        e.clientX - centerX;
+
+    let dy =
+        e.clientY - centerY;
+
+
+    const radius =
+        rect.width / 2 - 27;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    if(distance > radius){
+
+        dx =
+            dx / distance * radius;
+
+        dy =
+            dy / distance * radius;
+
+    }
+
+
+    /*
+        X controls horizontal movement.
+
+        Y controls vertical movement.
+    */
+
+    joyX =
+        dx / radius;
+
+    joyY =
+        dy / radius;
+
+
+    stick.style.left =
+        (rect.width / 2 - 25 + dx) +
+        "px";
+
+
+    stick.style.top =
+        (rect.height / 2 - 25 + dy) +
+        "px";
+
+}
+
+
+/* =========================
+   START JOYSTICK
+========================= */
+
+joystick.addEventListener(
+    "pointerdown",
+    function(e){
+
+        dragging = true;
+
+        joystick.setPointerCapture(
+            e.pointerId
+        );
+
+        updateJoystick(e);
+
+    }
+);
+
+
+/* =========================
+   MOVE JOYSTICK
+========================= */
+
+joystick.addEventListener(
+    "pointermove",
+    function(e){
+
+        if(!dragging)
+            return;
+
+        updateJoystick(e);
+
+    }
+);
+
+
+/* =========================
+   STOP JOYSTICK
+========================= */
+
+function stopJoystick(){
+
+    dragging = false;
+
+    joyX = 0;
+    joyY = 0;
+
+    stick.style.left =
+        "31px";
+
+    stick.style.top =
+        "31px";
+
+}
+
+
+joystick.addEventListener(
+    "pointerup",
+    stopJoystick
+);
+
+
+joystick.addEventListener(
+    "pointercancel",
+    stopJoystick
+);
+
+
+/* =========================
+   NORMAL NETWORK
+========================= */
+
+normalButton.addEventListener(
+    "click",
+    function(){
+
+        highLatency = false;
+
+        /*
+            Small delay.
+        */
+
+        latency = 0.13;
+
+        normalButton.classList.add(
+            "active"
+        );
+
+        lagButton.classList.remove(
+            "active"
+        );
+
+    }
+);
+
+
+/* =========================
+   HIGH LATENCY
+========================= */
+
+lagButton.addEventListener(
+    "click",
+    function(){
+
+        highLatency = true;
+
+        /*
+            Much slower catch-up.
+        */
+
+        latency = 0.018;
+
+        lagButton.classList.add(
+            "active"
+        );
+
+        normalButton.classList.remove(
+            "active"
+        );
+
+    }
+);
+
+
+/* =========================
+   MOVEMENT LOOP
+========================= */
+
+function movement(){
+
+    const speed = 3.8;
+
+
+    /*
+        YOUR DEVICE
+
+        X + Y movement.
+    */
+
+    x +=
+        joyX * speed;
+
+    y +=
+        joyY * speed;
+
+
+    /*
+        Keep player inside
+        YOUR screen.
+    */
+
+    x =
+        clamp(
+            x,
+            5,
+            screen1.clientWidth - 48
+        );
+
+
+    y =
+        clamp(
+            y,
+            45,
+            screen1.clientHeight - 48
+        );
+
+
+    /*
+        OTHER DEVICE
+
+        It doesn't instantly receive
+        the new position.
+
+        Instead it slowly catches up.
+    */
+
+    remoteX +=
+        (x - remoteX) *
+        latency;
+
+
+    remoteY +=
+        (y - remoteY) *
+        latency;
+
+
+    requestAnimationFrame(
+        movement
+    );
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function render(){
+
+    /*
+        YOUR SCREEN
+    */
+
+    move(
+        localPumpkin,
+        x,
+        y
+    );
+
+
+    move(
+        localPosition,
+        x - 8,
+        y - 9
+    );
+
+
+    move(
+        localLabel,
+        x - 4,
+        y - 27
+    );
+
+
+    /*
+        OTHER SCREEN
+    */
+
+    move(
+        remotePumpkin,
+        remoteX,
+        remoteY
+    );
+
+
+    move(
+        remotePosition,
+        remoteX - 8,
+        remoteY - 9
+    );
+
+
+    move(
+        remoteLabel,
+        remoteX - 4,
+        remoteY - 27
+    );
+
+
+    /*
+        Calculate how far
+        the two screens disagree.
+    */
+
+    const difference =
+        Math.sqrt(
+
+            Math.pow(
+                x - remoteX,
+                2
+            )
+
+            +
+
+            Math.pow(
+                y - remoteY,
+                2
+            )
+
+        );
+
+
+    /*
+        Ping display
+    */
+
+    let currentPing;
+
+
+    if(highLatency){
+
+        currentPing =
+            Math.round(
+                150 +
+                difference * 2
+            );
+
+    }else{
+
+        currentPing =
+            Math.round(
+                35 +
+                difference
+            );
+
+    }
+
+
+    ping.innerText =
+        currentPing +
+        "ms";
+
+
+    /*
+        Coordinates
+    */
+
+    localCoords.innerText =
+        Math.round(x) +
+        ", " +
+        Math.round(y);
+
+
+    remoteCoords.innerText =
+        Math.round(remoteX) +
+        ", " +
+        Math.round(remoteY);
+
+
+    /*
+        DESYNC WARNING
+    */
+
+    const threshold =
+        highLatency
+        ? 15
+        : 35;
+
+
+    if(
+        difference >
+        threshold
+    ){
+
+        desync.classList.add(
+            "active"
+        );
+
+
+        remoteStatus.innerText =
+            "● OUT OF SYNC";
+
+
+        remoteStatus.classList.add(
+            "warning"
+        );
+
+    }else{
+
+        desync.classList.remove(
+            "active"
+        );
+
+
+        remoteStatus.innerText =
+            "● CONNECTED";
+
+
+        remoteStatus.classList.remove(
+            "warning"
+        );
+
+    }
+
+
+    requestAnimationFrame(
+        render
+    );
+
+}
+
+
+/* =========================
+   START EVERYTHING
+========================= */
+
+movement();
+
+render();
+
+</script>
+
+</body>
+</html>
