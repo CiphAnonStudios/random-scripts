@@ -1,1 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Network Latency Visualizer</title>
 
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    background:#090a0c;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    min-height:100vh;
+    overflow:hidden;
+}
+
+.app{
+    width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    padding:14px;
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.title{
+    text-align:center;
+}
+
+.title h1{
+    font-size:25px;
+    font-weight:800;
+}
+
+.title p{
+    color:#8d9198;
+    font-size:13px;
+    margin-top:5px;
+}
+
+/* =========================
+   SCREENS
+========================= */
+
+.screens{
+    width:min(1100px,100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+}
+
+.phone{
+    width:47%;
+    max-width:520px;
+    background:#17181b;
+    border:3px solid #303238;
+    border-radius:22px;
+    padding:7px;
+    box-shadow:0 12px 35px rgba(0,0,0,.45);
+}
+
+.phone-bar{
+    height:26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 9px;
+    color:#777b82;
+    font-size:10px;
+}
+
+.phone-name{
+    color:#e8e8e8;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.screen{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    overflow:hidden;
+    border-radius:15px;
+}
+
+/* =========================
+   GAME WORLD
+========================= */
+
+.world{
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(
+            to bottom,
+            #78c6f5 0%,
+            #b8e5ff 57%,
+            #75a84e 57%,
+            #75a84e 100%
+        );
+}
+
+/* Clouds */
+
+.cloud{
+    position:absolute;
+    width:70px;
+    height:20px;
+    background:rgba(255,255,255,.7);
+    border-radius:30px;
+}
+
+.cloud:before,
+.cloud:after{
+    content:"";
+    position:absolute;
+    background:inherit;
+    border-radius:50%;
+}
+
+.cloud:before{
+    width:30px;
+    height:30px;
+    left:12px;
+    top:-13px;
+}
+
+.cloud:after{
+    width:38px;
+    height:38px;
+    right:8px;
+    top:-19px;
+}
+
+.cloud1{
+    left:15%;
+    top:18%;
+}
+
+.cloud2{
+    right:13%;
+    top:28%;
+    transform:scale(.7);
+}
+
+/* Ground */
+
+.ground{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:43%;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 45px,
+            rgba(0,0,0,.035) 46px,
+            transparent 47px
+        );
+}
+
+.ground-line{
+    position:absolute;
+    top:57%;
+    left:0;
+    right:0;
+    height:4px;
+    background:#436c2e;
+}
+
+/* =========================
+   CHARACTERS
+========================= */
+
+.character{
+    position:absolute;
+    width:38px;
+    height:38px;
+    transform:translate(-50%,-50%);
+    z-index:5;
+}
+
+.body{
+    position:absolute;
+    inset:0;
+    border-radius:9px;
+    border:3px solid;
+}
+
+/* YOU */
+
+.you .body{
+    background:#ff7818;
+    border-color:#b84d08;
+}
+
+.you .body:before,
+.you .body:after{
+    content:"";
+    position:absolute;
+    top:3px;
+    bottom:3px;
+    width:3px;
+    background:rgba(140,50,5,.35);
+    border-radius:5px;
+}
+
+.you .body:before{
+    left:9px;
+}
+
+.you .body:after{
+    right:9px;
+}
+
+/* OTHER */
+
+.other .body{
+    background:#4d9be4;
+    border-color:#316d9f;
+}
+
+/* Face */
+
+.eye{
+    position:absolute;
+    width:5px;
+    height:6px;
+    background:#111;
+    border-radius:2px;
+    top:10px;
+}
+
+.eye.left{
+    left:8px;
+}
+
+.eye.right{
+    right:8px;
+}
+
+.mouth{
+    position:absolute;
+    width:14px;
+    height:6px;
+    left:50%;
+    bottom:7px;
+    transform:translateX(-50%);
+    border-bottom:3px solid #111;
+}
+
+/* Stem */
+
+.stem{
+    position:absolute;
+    width:8px;
+    height:7px;
+    background:#68421f;
+    border-radius:3px;
+    left:50%;
+    top:-6px;
+    transform:translateX(-50%);
+}
+
+/* =========================
+   REAL POSITION GHOST
+========================= */
+
+.real-position{
+    position:absolute;
+    width:38px;
+    height:38px;
+    transform:translate(-50%,-50%);
+    z-index:3;
+    opacity:.28;
+}
+
+.real-position .body{
+    background:#ff7818;
+    border:3px solid #ff9b58;
+}
+
+.real-position .stem{
+    opacity:.7;
+}
+
+.real-label{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,.65);
+    color:#fff;
+    padding:3px 5px;
+    border-radius:4px;
+    font-size:9px;
+    white-space:nowrap;
+    z-index:8;
+}
+
+/* =========================
+   PLAYER LABELS
+========================= */
+
+.player-label{
+    position:absolute;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.65);
+    padding:3px 6px;
+    border-radius:4px;
+    font-size:9px;
+    white-space:nowrap;
+    z-index:9;
+}
+
+.you-label{
+    color:#ff9b5a;
+}
+
+.other-label{
+    color:#7ebfff;
+}
+
+/* =========================
+   SCREEN HEADER
+========================= */
+
+.screen-header{
+    position:absolute;
+    top:8px;
+    left:9px;
+    z-index:20;
+    background:rgba(0,0,0,.58);
+    padding:5px 8px;
+    border-radius:5px;
+    font-size:10px;
+    font-weight:bold;
+}
+
+/* =========================
+   CENTER
+========================= */
+
+.center{
+    width:70px;
+    text-align:center;
+    flex-shrink:0;
+}
+
+.center-line{
+    width:65px;
+    height:2px;
+    background:#555;
+    margin:auto;
+}
+
+.center-text{
+    margin-top:8px;
+    color:#888;
+    font-size:10px;
+    line-height:1.35;
+}
+
+/* =========================
+   LATENCY CONTROLS
+========================= */
+
+.panel{
+    width:min(850px,100%);
+    background:#151619;
+    border:1px solid #292b30;
+    border-radius:13px;
+    padding:13px 18px;
+}
+
+.latency-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+}
+
+.latency-title{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.ping-value{
+    font-size:13px;
+    font-weight:bold;
+}
+
+.slider{
+    width:100%;
+    accent-color:#ff7818;
+}
+
+.slider-labels{
+    display:flex;
+    justify-content:space-between;
+    color:#777;
+    font-size:10px;
+    margin-top:4px;
+}
+
+.explanation{
+    text-align:center;
+    color:#9a9da3;
+    font-size:12px;
+    line-height:1.4;
+    margin-top:11px;
+}
+
+.explanation strong{
+    color:white;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+}
+
+.control{
+    color:#858890;
+    font-size:11px;
+}
+
+kbd{
+    display:inline-block;
+    min-width:23px;
+    padding:4px 6px;
+    text-align:center;
+    background:#1d1f23;
+    border:1px solid #383a40;
+    border-radius:5px;
+    color:#ddd;
+    font-weight:bold;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:750px){
+
+    .app{
+        gap:8px;
+        padding:8px;
+    }
+
+    .title h1{
+        font-size:18px;
+    }
+
+    .title p{
+        font-size:9px;
+    }
+
+    .screens{
+        gap:6px;
+    }
+
+    .phone{
+        width:49%;
+        border-radius:13px;
+        padding:4px;
+    }
+
+    .phone-bar{
+        height:18px;
+        font-size:7px;
+    }
+
+    .phone-name{
+        font-size:8px;
+    }
+
+    .screen{
+        border-radius:9px;
+    }
+
+    .center{
+        display:none;
+    }
+
+    .character,
+    .real-position{
+        width:27px;
+        height:27px;
+    }
+
+    .panel{
+        padding:8px 10px;
+    }
+
+    .explanation{
+        font-size:9px;
+    }
+
+    .controls{
+        font-size:9px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="title">
+        <h1>What Network Latency Actually Looks Like</h1>
+        <p>Both players are in the same game — but each screen can receive updates at different times.</p>
+    </div>
+
+
+    <div class="screens">
+
+        <!-- YOUR SCREEN -->
+
+        <div class="phone">
+
+            <div class="phone-bar">
+                <span>9:41</span>
+                <span class="phone-name">YOUR SCREEN</span>
+                <span>●●●</span>
+            </div>
+
+            <div class="screen">
+
+                <div class="world">
+
+                    <div class="cloud cloud1"></div>
+                    <div class="cloud cloud2"></div>
+
+                    <div class="ground"></div>
+                    <div class="ground-line"></div>
+
+                    <div class="screen-header">
+                        YOUR CLIENT
+                    </div>
+
+                    <!-- YOU -->
+
+                    <div
+                        id="yourPlayer"
+                        class="character you">
+
+                        <div class="stem"></div>
+
+                        <div class="body">
+
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="yourLabel"
+                        class="player-label you-label">
+
+                        YOU
+
+                    </div>
+
+
+                    <!-- OTHER PLAYER -->
+
+                    <div
+                        id="yourOther"
+                        class="character other">
+
+                        <div class="body">
+
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="yourOtherLabel"
+                        class="player-label other-label">
+
+                        OTHER PLAYER
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CENTER -->
+
+        <div class="center">
+
+            <div class="center-line"></div>
+
+            <div class="center-text">
+                SAME<br>
+                GAME<br><br>
+                DIFFERENT<br>
+                UPDATE TIME
+            </div>
+
+            <div class="center-line" style="margin-top:8px;"></div>
+
+        </div>
+
+
+        <!-- OTHER PLAYER SCREEN -->
+
+        <div class="phone">
+
+            <div class="phone-bar">
+                <span>9:41</span>
+                <span class="phone-name">OTHER PLAYER'S SCREEN</span>
+                <span>●●●</span>
+            </div>
+
+            <div class="screen">
+
+                <div class="world">
+
+                    <div class="cloud cloud1"></div>
+                    <div class="cloud cloud2"></div>
+
+                    <div class="ground"></div>
+                    <div class="ground-line"></div>
+
+                    <div class="screen-header">
+                        OTHER CLIENT
+                    </div>
+
+
+                    <!-- REAL CURRENT POSITION -->
+
+                    <div
+                        id="realYou"
+                        class="real-position">
+
+                        <div class="stem"></div>
+
+                        <div class="body"></div>
+
+                    </div>
+
+                    <div
+                        id="realLabel"
+                        class="real-label">
+
+                        REAL POSITION
+
+                    </div>
+
+
+                    <!-- DELAYED VERSION OF YOU -->
+
+                    <div
+                        id="seenYou"
+                        class="character you">
+
+                        <div class="stem"></div>
+
+                        <div class="body">
+
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="seenLabel"
+                        class="player-label you-label">
+
+                        YOU
+
+                    </div>
+
+
+                    <!-- OTHER PLAYER -->
+
+                    <div
+                        id="otherSelf"
+                        class="character other">
+
+                        <div class="body">
+
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+
+                        </div>
+
+                    </div>
+
+                    <div
+                        id="otherSelfLabel"
+                        class="player-label other-label">
+
+                        OTHER PLAYER
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- LATENCY -->
+
+    <div class="panel">
+
+        <div class="latency-top">
+
+            <span class="latency-title">
+                NETWORK LATENCY
+            </span>
+
+            <span
+                id="pingValue"
+                class="ping-value">
+                50 ms
+            </span>
+
+        </div>
+
+        <input
+            id="latency"
+            class="slider"
+            type="range"
+            min="0"
+            max="5"
+            value="1"
+            step="1">
+
+        <div class="slider-labels">
+
+            <span>LOW LATENCY</span>
+            <span>NORMAL</span>
+            <span>HIGH LATENCY</span>
+
+        </div>
+
+        <div class="explanation">
+
+            <strong>Faded character:</strong>
+            your actual/current position.
+            &nbsp;&nbsp;
+            <strong>Solid character:</strong>
+            the position the other player's game currently knows.
+
+        </div>
+
+    </div>
+
+
+    <div class="controls">
+
+        <span class="control">
+            MOVE YOU:
+        </span>
+
+        <kbd>W</kbd>
+        <kbd>A</kbd>
+        <kbd>S</kbd>
+        <kbd>D</kbd>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const yourPlayer =
+    document.getElementById("yourPlayer");
+
+const yourOther =
+    document.getElementById("yourOther");
+
+const yourLabel =
+    document.getElementById("yourLabel");
+
+const yourOtherLabel =
+    document.getElementById("yourOtherLabel");
+
+const realYou =
+    document.getElementById("realYou");
+
+const seenYou =
+    document.getElementById("seenYou");
+
+const otherSelf =
+    document.getElementById("otherSelf");
+
+const realLabel =
+    document.getElementById("realLabel");
+
+const seenLabel =
+    document.getElementById("seenLabel");
+
+const otherSelfLabel =
+    document.getElementById("otherSelfLabel");
+
+const latencySlider =
+    document.getElementById("latency");
+
+const pingValue =
+    document.getElementById("pingValue");
+
+
+/* =========================================================
+   WORLD POSITIONS
+========================================================= */
+
+/*
+    Coordinates are percentages of the game screen.
+*/
+
+let youX = 30;
+let youY = 62;
+
+let otherX = 68;
+let otherY = 62;
+
+
+/*
+    This is the position that the OTHER CLIENT
+    currently thinks you are at.
+
+    This is intentionally separate from youX/youY.
+*/
+
+let seenYouX = youX;
+let seenYouY = youY;
+
+
+/* =========================================================
+   MOVEMENT
+========================================================= */
+
+const keys = {};
+
+document.addEventListener("keydown", e => {
+
+    const key = e.key.toLowerCase();
+
+    if(
+        key === "w" ||
+        key === "a" ||
+        key === "s" ||
+        key === "d"
+    ){
+
+        keys[key] = true;
+
+        e.preventDefault();
+
+    }
+
+});
+
+document.addEventListener("keyup", e => {
+
+    const key = e.key.toLowerCase();
+
+    if(
+        key === "w" ||
+        key === "a" ||
+        key === "s" ||
+        key === "d"
+    ){
+
+        keys[key] = false;
+
+    }
+
+});
+
+
+/* =========================================================
+   LATENCY
+========================================================= */
+
+const pingLevels = [
+    20,
+    50,
+    100,
+    150,
+    220,
+    350
+];
+
+function getPing(){
+
+    return pingLevels[
+        Number(latencySlider.value)
+    ];
+
+}
+
+
+/*
+    Converts the slider into how quickly
+    the other client catches up.
+
+    Lower value = faster update.
+    Higher value = slower update.
+*/
+
+function getNetworkFollow(){
+
+    const ping = getPing();
+
+    /*
+        This is a visual approximation.
+
+        It is NOT a literal Roblox replication
+        algorithm.
+    */
+
+    if(ping <= 20) return .42;
+    if(ping <= 50) return .28;
+    if(ping <= 100) return .16;
+    if(ping <= 150) return .09;
+    if(ping <= 220) return .055;
+
+    return .025;
+
+}
+
+
+latencySlider.addEventListener("input", () => {
+
+    pingValue.textContent =
+        getPing() + " ms";
+
+});
+
+
+/* =========================================================
+   UPDATE
+========================================================= */
+
+function update(){
+
+    let dx = 0;
+    let dy = 0;
+
+
+    /* WASD */
+
+    if(keys["a"]) dx -= 1;
+    if(keys["d"]) dx += 1;
+    if(keys["w"]) dy -= 1;
+    if(keys["s"]) dy += 1;
+
+
+    /* Normalize diagonal movement */
+
+    if(dx !== 0 || dy !== 0){
+
+        const length =
+            Math.sqrt(dx * dx + dy * dy);
+
+        dx /= length;
+        dy /= length;
+
+    }
+
+
+    /* Move YOUR character */
+
+    const speed = .55;
+
+    youX += dx * speed;
+    youY += dy * speed;
+
+
+    /* Keep inside game */
+
+    youX =
+        Math.max(7,Math.min(93,youX));
+
+    youY =
+        Math.max(12,Math.min(88,youY));
+
+
+    /*
+        The other player's own character
+        stays in the same place.
+
+        This represents them existing
+        normally on both screens.
+    */
+
+
+    /*
+        IMPORTANT PART:
+
+        The OTHER CLIENT does not instantly
+        use your current position.
+
+        It receives updates with latency.
+    */
+
+    const follow =
+        getNetworkFollow();
+
+    seenYouX +=
+        (youX - seenYouX) * follow;
+
+    seenYouY +=
+        (youY - seenYouY) * follow;
+
+
+    render();
+
+    requestAnimationFrame(update);
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function setPosition(element,x,y){
+
+    element.style.left = x + "%";
+    element.style.top = y + "%";
+
+}
+
+
+/* Your screen */
+
+function renderYourScreen(){
+
+    setPosition(
+        yourPlayer,
+        youX,
+        youY
+    );
+
+    setPosition(
+        yourOther,
+        otherX,
+        otherY
+    );
+
+
+    yourLabel.style.left =
+        youX + "%";
+
+    yourLabel.style.top =
+        (youY - 9) + "%";
+
+
+    yourOtherLabel.style.left =
+        otherX + "%";
+
+    yourOtherLabel.style.top =
+        (otherY - 9) + "%";
+
+}
+
+
+/* Other player's screen */
+
+function renderOtherScreen(){
+
+    /*
+        Faded character = REAL position
+    */
+
+    setPosition(
+        realYou,
+        youX,
+        youY
+    );
+
+
+    /*
+        Solid character = what their
+        game currently thinks your
+        position is.
+    */
+
+    setPosition(
+        seenYou,
+        seenYouX,
+        seenYouY
+    );
+
+
+    /*
+        Other player sees themselves
+        normally.
+    */
+
+    setPosition(
+        otherSelf,
+        otherX,
+        otherY
+    );
+
+
+    /*
+        Labels
+    */
+
+    realLabel.style.left =
+        youX + "%";
+
+    realLabel.style.top =
+        (youY + 10) + "%";
+
+
+    seenLabel.style.left =
+        seenYouX + "%";
+
+    seenLabel.style.top =
+        (seenYouY - 9) + "%";
+
+
+    otherSelfLabel.style.left =
+        otherX + "%";
+
+    otherSelfLabel.style.top =
+        (otherY - 9) + "%";
+
+
+    /*
+        Only show REAL POSITION when
+        there is actually a noticeable
+        difference.
+    */
+
+    const difference =
+        Math.sqrt(
+            Math.pow(youX-seenYouX,2) +
+            Math.pow(youY-seenYouY,2)
+        );
+
+
+    if(difference < 2){
+
+        realYou.style.opacity = "0";
+        realLabel.style.opacity = "0";
+
+    }else{
+
+        realYou.style.opacity = ".28";
+        realLabel.style.opacity = ".8";
+
+    }
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render(){
+
+    renderYourScreen();
+    renderOtherScreen();
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+render();
+update();
+
+</script>
+
+</body>
+</html>
