@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Network Latency Visualizer</title>
@@ -540,20 +538,20 @@ kbd{
         <div class="phone">
 
             <div class="phone-bar">
-                <span>9:41</span>
+                
                 <span class="phone-name">YOUR SCREEN</span>
-                <span>●●●</span>
+                
             </div>
 
             <div class="screen">
 
                 <div class="world">
 
-                    <div class="cloud cloud1"></div>
-                    <div class="cloud cloud2"></div>
+                    
+                    
 
-                    <div class="ground"></div>
-                    <div class="ground-line"></div>
+                    
+                    
 
                     <div class="screen-header">
                         YOUR CLIENT
@@ -561,9 +559,7 @@ kbd{
 
                     <!-- YOU -->
 
-                    <div
-                        id="yourPlayer"
-                        class="character you">
+                    <div id="yourPlayer" class="character you" style="left: 30.916%; top: 48.2224%;">
 
                         <div class="stem"></div>
 
@@ -577,9 +573,7 @@ kbd{
 
                     </div>
 
-                    <div
-                        id="yourLabel"
-                        class="player-label you-label">
+                    <div id="yourLabel" class="player-label you-label" style="left: 30.916%; top: 39.2224%;">
 
                         YOU
 
@@ -588,9 +582,7 @@ kbd{
 
                     <!-- OTHER PLAYER -->
 
-                    <div
-                        id="yourOther"
-                        class="character other">
+                    <div id="yourOther" class="character other" style="left: 68%; top: 62%;">
 
                         <div class="body">
 
@@ -602,9 +594,7 @@ kbd{
 
                     </div>
 
-                    <div
-                        id="yourOtherLabel"
-                        class="player-label other-label">
+                    <div id="yourOtherLabel" class="player-label other-label" style="left: 68%; top: 53%;">
 
                         OTHER PLAYER
 
@@ -640,20 +630,20 @@ kbd{
         <div class="phone">
 
             <div class="phone-bar">
-                <span>9:41</span>
+                
                 <span class="phone-name">OTHER PLAYER'S SCREEN</span>
-                <span>●●●</span>
+                
             </div>
 
             <div class="screen">
 
                 <div class="world">
 
-                    <div class="cloud cloud1"></div>
-                    <div class="cloud cloud2"></div>
+                    
+                    
 
-                    <div class="ground"></div>
-                    <div class="ground-line"></div>
+                    
+                    
 
                     <div class="screen-header">
                         OTHER CLIENT
@@ -662,9 +652,7 @@ kbd{
 
                     <!-- REAL CURRENT POSITION -->
 
-                    <div
-                        id="realYou"
-                        class="real-position">
+                    <div id="realYou" class="real-position" style="left: 30.916%; top: 48.2224%; opacity: 0;">
 
                         <div class="stem"></div>
 
@@ -672,9 +660,7 @@ kbd{
 
                     </div>
 
-                    <div
-                        id="realLabel"
-                        class="real-label">
+                    <div id="realLabel" class="real-label" style="left: 30.916%; top: 58.2224%; opacity: 0;">
 
                         REAL POSITION
 
@@ -683,9 +669,7 @@ kbd{
 
                     <!-- DELAYED VERSION OF YOU -->
 
-                    <div
-                        id="seenYou"
-                        class="character you">
+                    <div id="seenYou" class="character you" style="left: 30.916%; top: 48.2224%;">
 
                         <div class="stem"></div>
 
@@ -699,9 +683,7 @@ kbd{
 
                     </div>
 
-                    <div
-                        id="seenLabel"
-                        class="player-label you-label">
+                    <div id="seenLabel" class="player-label you-label" style="left: 30.916%; top: 39.2224%;">
 
                         YOU
 
@@ -710,9 +692,7 @@ kbd{
 
                     <!-- OTHER PLAYER -->
 
-                    <div
-                        id="otherSelf"
-                        class="character other">
+                    <div id="otherSelf" class="character other" style="left: 68%; top: 62%;">
 
                         <div class="body">
 
@@ -724,9 +704,7 @@ kbd{
 
                     </div>
 
-                    <div
-                        id="otherSelfLabel"
-                        class="player-label other-label">
+                    <div id="otherSelfLabel" class="player-label other-label" style="left: 68%; top: 53%;">
 
                         OTHER PLAYER
 
@@ -751,22 +729,11 @@ kbd{
                 NETWORK LATENCY
             </span>
 
-            <span
-                id="pingValue"
-                class="ping-value">
-                50 ms
-            </span>
+            <span id="pingValue" class="ping-value">150 ms</span>
 
         </div>
 
-        <input
-            id="latency"
-            class="slider"
-            type="range"
-            min="0"
-            max="5"
-            value="1"
-            step="1">
+        <input id="latency" class="slider" type="range" min="0" max="5" value="1" step="1">
 
         <div class="slider-labels">
 
@@ -789,18 +756,7 @@ kbd{
     </div>
 
 
-    <div class="controls">
-
-        <span class="control">
-            MOVE YOU:
-        </span>
-
-        <kbd>W</kbd>
-        <kbd>A</kbd>
-        <kbd>S</kbd>
-        <kbd>D</kbd>
-
-    </div>
+    
 
 </div>
 
@@ -1093,14 +1049,14 @@ function renderYourScreen(){
         youX + "%";
 
     yourLabel.style.top =
-        (youY - 9) + "%";
+        (youY - 24) + "%";
 
 
     yourOtherLabel.style.left =
         otherX + "%";
 
     yourOtherLabel.style.top =
-        (otherY - 9) + "%";
+        (otherY - 24) + "%";
 
 }
 
@@ -1153,21 +1109,21 @@ function renderOtherScreen(){
         youX + "%";
 
     realLabel.style.top =
-        (youY + 10) + "%";
+        (youY + 24) + "%";
 
 
     seenLabel.style.left =
         seenYouX + "%";
 
     seenLabel.style.top =
-        (seenYouY - 9) + "%";
+        (seenYouY - 24) + "%";
 
 
     otherSelfLabel.style.left =
         otherX + "%";
 
     otherSelfLabel.style.top =
-        (otherY - 9) + "%";
+        (otherY - 24) + "%";
 
 
     /*
@@ -1219,5 +1175,6 @@ update();
 
 </script>
 
-</body>
-</html>
+
+
+</body></html>
