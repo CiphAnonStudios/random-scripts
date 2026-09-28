@@ -1,1 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+<title>Roblox Networking Visualizer</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    background:#0b0b0d;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    min-height:100vh;
+    overflow:hidden;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.app{
+    width:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    gap:16px;
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.title{
+    text-align:center;
+}
+
+.title h1{
+    font-size:25px;
+    font-weight:800;
+    letter-spacing:-.5px;
+}
+
+.title p{
+    margin-top:5px;
+    color:#8e8e95;
+    font-size:14px;
+}
+
+/* =========================
+   TWO PHONES
+========================= */
+
+.screens{
+    width:min(1100px,100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:18px;
+}
+
+/* Phone */
+
+.phone{
+    width:46%;
+    max-width:510px;
+    background:#151518;
+    border:3px solid #303035;
+    border-radius:22px;
+    padding:8px;
+    box-shadow:0 12px 40px rgba(0,0,0,.45);
+}
+
+.phone-top{
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 10px;
+    color:#888;
+    font-size:11px;
+}
+
+.phone-title{
+    color:#ddd;
+    font-weight:700;
+    font-size:12px;
+}
+
+.screen{
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    overflow:hidden;
+    border-radius:14px;
+    background:#20252a;
+}
+
+/* =========================
+   GAME WORLD
+========================= */
+
+.world{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+    background:
+        linear-gradient(
+            to bottom,
+            #7fc8ff 0%,
+            #b9e2ff 58%,
+            #79ad55 58%,
+            #79ad55 100%
+        );
+}
+
+/* Clouds */
+
+.cloud{
+    position:absolute;
+    width:65px;
+    height:18px;
+    background:rgba(255,255,255,.72);
+    border-radius:30px;
+}
+
+.cloud:before,
+.cloud:after{
+    content:"";
+    position:absolute;
+    background:inherit;
+    border-radius:50%;
+}
+
+.cloud:before{
+    width:28px;
+    height:28px;
+    left:10px;
+    top:-12px;
+}
+
+.cloud:after{
+    width:36px;
+    height:36px;
+    right:8px;
+    top:-18px;
+}
+
+.cloud.one{
+    top:15%;
+    left:15%;
+}
+
+.cloud.two{
+    top:25%;
+    right:14%;
+    transform:scale(.7);
+}
+
+/* Ground */
+
+.ground{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:42%;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0,
+            transparent 55px,
+            rgba(0,0,0,.035) 56px,
+            transparent 57px
+        );
+}
+
+.ground-line{
+    position:absolute;
+    left:0;
+    right:0;
+    top:58%;
+    height:4px;
+    background:#426c2e;
+}
+
+/* =========================
+   PUMPKIN PLAYER
+========================= */
+
+.player{
+    position:absolute;
+    width:34px;
+    height:34px;
+    transform:translate(-50%,-50%);
+    z-index:5;
+}
+
+.pumpkin-body{
+    position:absolute;
+    inset:0;
+    background:#ff791c;
+    border:3px solid #b84c0a;
+    border-radius:8px;
+    box-shadow:
+        inset 5px 0 rgba(255,255,255,.08),
+        inset -5px 0 rgba(0,0,0,.08);
+}
+
+/* Pumpkin grooves */
+
+.pumpkin-body:before,
+.pumpkin-body:after{
+    content:"";
+    position:absolute;
+    top:3px;
+    bottom:3px;
+    width:3px;
+    background:rgba(150,55,5,.35);
+    border-radius:5px;
+}
+
+.pumpkin-body:before{
+    left:9px;
+}
+
+.pumpkin-body:after{
+    right:9px;
+}
+
+/* Face */
+
+.eye{
+    position:absolute;
+    width:4px;
+    height:5px;
+    background:#151515;
+    border-radius:2px;
+    top:10px;
+}
+
+.eye.left{
+    left:8px;
+}
+
+.eye.right{
+    right:8px;
+}
+
+.mouth{
+    position:absolute;
+    width:13px;
+    height:5px;
+    border-bottom:3px solid #151515;
+    left:50%;
+    bottom:7px;
+    transform:translateX(-50%);
+}
+
+/* Stem */
+
+.stem{
+    position:absolute;
+    width:8px;
+    height:7px;
+    background:#65411e;
+    border-radius:3px;
+    left:50%;
+    top:-6px;
+    transform:translateX(-50%);
+}
+
+/* =========================
+   OTHER PLAYER
+========================= */
+
+.remote-player{
+    position:absolute;
+    width:34px;
+    height:34px;
+    transform:translate(-50%,-50%);
+    z-index:4;
+}
+
+.remote-body{
+    width:100%;
+    height:100%;
+    border:3px solid #3e75a8;
+    background:#4e9be5;
+    border-radius:8px;
+    opacity:.95;
+}
+
+.remote-player .eye{
+    background:#111;
+}
+
+.remote-player .mouth{
+    border-color:#111;
+}
+
+/* =========================
+   LAST POSITION
+========================= */
+
+.last-position{
+    position:absolute;
+    width:40px;
+    height:40px;
+    border:2px dashed rgba(255,255,255,.65);
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    z-index:2;
+    pointer-events:none;
+}
+
+.last-label{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    font-size:9px;
+    color:white;
+    background:rgba(0,0,0,.65);
+    padding:3px 5px;
+    border-radius:4px;
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:7;
+}
+
+/* =========================
+   SCREEN LABEL
+========================= */
+
+.screen-label{
+    position:absolute;
+    top:9px;
+    left:10px;
+    z-index:10;
+    background:rgba(0,0,0,.6);
+    padding:5px 8px;
+    border-radius:6px;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.3px;
+}
+
+.local-label{
+    color:#ff9a4a;
+}
+
+.other-label{
+    color:#72b8ff;
+}
+
+/* =========================
+   MIDDLE ARROW
+========================= */
+
+.middle{
+    width:70px;
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+}
+
+.arrow{
+    width:55px;
+    height:3px;
+    background:#555;
+    position:relative;
+}
+
+.arrow:after{
+    content:"";
+    position:absolute;
+    right:-1px;
+    top:-5px;
+    border-left:9px solid #777;
+    border-top:6px solid transparent;
+    border-bottom:6px solid transparent;
+}
+
+.delay-text{
+    font-size:10px;
+    color:#777;
+    text-align:center;
+}
+
+/* =========================
+   EXPLANATION FLOW
+========================= */
+
+.flow{
+    width:min(850px,100%);
+    background:#151518;
+    border:1px solid #29292e;
+    border-radius:14px;
+    padding:13px 18px;
+}
+
+.flow-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.flow-box{
+    padding:8px 12px;
+    border-radius:7px;
+    background:#202024;
+    border:1px solid #36363c;
+    font-size:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.flow-box.you{
+    border-color:#b9581a;
+    color:#ff9a4a;
+}
+
+.flow-box.server{
+    border-color:#666;
+    color:#ddd;
+}
+
+.flow-box.other{
+    border-color:#376f9e;
+    color:#75baff;
+}
+
+.flow-arrow{
+    color:#555;
+    font-size:16px;
+}
+
+.explanation{
+    text-align:center;
+    margin-top:9px;
+    color:#aaa;
+    font-size:12px;
+}
+
+.explanation strong{
+    color:white;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:1px solid #333;
+    background:#17171a;
+    color:#aaa;
+    padding:8px 14px;
+    border-radius:7px;
+    cursor:pointer;
+    font-weight:700;
+    font-size:11px;
+}
+
+button.active{
+    color:white;
+    border-color:#777;
+    background:#29292d;
+}
+
+.help{
+    color:#777;
+    font-size:11px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:750px){
+
+    .app{
+        padding:10px;
+        gap:10px;
+    }
+
+    .title h1{
+        font-size:19px;
+    }
+
+    .title p{
+        font-size:11px;
+    }
+
+    .screens{
+        gap:7px;
+    }
+
+    .phone{
+        width:48%;
+        border-radius:14px;
+        padding:5px;
+    }
+
+    .phone-top{
+        height:19px;
+        padding:0 5px;
+        font-size:8px;
+    }
+
+    .phone-title{
+        font-size:8px;
+    }
+
+    .screen{
+        border-radius:9px;
+    }
+
+    .middle{
+        display:none;
+    }
+
+    .flow{
+        padding:9px;
+    }
+
+    .flow-box{
+        padding:6px 7px;
+        font-size:9px;
+    }
+
+    .flow-arrow{
+        font-size:12px;
+    }
+
+    .explanation{
+        font-size:9px;
+    }
+
+    .help{
+        font-size:9px;
+    }
+
+    .player,
+    .remote-player{
+        width:27px;
+        height:27px;
+    }
+
+    .last-position{
+        width:32px;
+        height:32px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <div class="title">
+        <h1>Why Network Delay Can Make Players Look Different</h1>
+        <p>Both screens are looking at the same game — but they don't receive updates at the same time.</p>
+    </div>
+
+    <!-- TWO SCREENS -->
+
+    <div class="screens">
+
+        <!-- YOUR PHONE -->
+
+        <div class="phone">
+
+            <div class="phone-top">
+                <span>9:41</span>
+                <span class="phone-title">YOUR PHONE</span>
+                <span>●●●</span>
+            </div>
+
+            <div class="screen">
+
+                <div class="world">
+
+                    <div class="cloud one"></div>
+                    <div class="cloud two"></div>
+
+                    <div class="ground"></div>
+                    <div class="ground-line"></div>
+
+                    <div class="screen-label local-label">
+                        YOUR GAME
+                    </div>
+
+                    <div id="localPlayer" class="player">
+
+                        <div class="stem"></div>
+
+                        <div class="pumpkin-body">
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MIDDLE -->
+
+        <div class="middle">
+
+            <div class="arrow"></div>
+
+            <div class="delay-text">
+                NETWORK<br>
+                DELAY
+            </div>
+
+            <div class="arrow" style="transform:rotate(180deg);"></div>
+
+        </div>
+
+
+        <!-- OTHER PHONE -->
+
+        <div class="phone">
+
+            <div class="phone-top">
+                <span>9:41</span>
+                <span class="phone-title">OTHER PLAYER</span>
+                <span>●●●</span>
+            </div>
+
+            <div class="screen">
+
+                <div class="world">
+
+                    <div class="cloud one"></div>
+                    <div class="cloud two"></div>
+
+                    <div class="ground"></div>
+                    <div class="ground-line"></div>
+
+                    <div class="screen-label other-label">
+                        OTHER GAME
+                    </div>
+
+                    <!-- LAST POSITION RECEIVED -->
+
+                    <div
+                        id="lastPosition"
+                        class="last-position">
+                    </div>
+
+                    <div
+                        id="lastLabel"
+                        class="last-label">
+                        last position received
+                    </div>
+
+                    <!-- REMOTE VERSION OF YOU -->
+
+                    <div
+                        id="remotePlayer"
+                        class="remote-player">
+
+                        <div class="remote-body">
+
+                            <div class="eye left"></div>
+                            <div class="eye right"></div>
+                            <div class="mouth"></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SIMPLE NETWORK FLOW -->
+
+    <div class="flow">
+
+        <div class="flow-row">
+
+            <div class="flow-box you">
+                YOUR POSITION
+            </div>
+
+            <div class="flow-arrow">
+                →
+            </div>
+
+            <div class="flow-box server">
+                SERVER
+            </div>
+
+            <div class="flow-arrow">
+                →
+            </div>
+
+            <div class="flow-box other">
+                OTHER PLAYER
+            </div>
+
+        </div>
+
+        <div class="explanation">
+            You move immediately.
+            The server receives your update.
+            <strong>The other player receives it later.</strong>
+        </div>
+
+    </div>
+
+
+    <!-- CONTROLS -->
+
+    <div class="controls">
+
+        <button
+            id="normalBtn"
+            class="active">
+            NORMAL PING
+        </button>
+
+        <button
+            id="highBtn">
+            HIGH PING
+        </button>
+
+        <span class="help">
+            WASD to move
+        </span>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   NETWORK VISUALIZER
+========================================================= */
+
+const localPlayer =
+    document.getElementById("localPlayer");
+
+const remotePlayer =
+    document.getElementById("remotePlayer");
+
+const lastPosition =
+    document.getElementById("lastPosition");
+
+const lastLabel =
+    document.getElementById("lastLabel");
+
+const normalBtn =
+    document.getElementById("normalBtn");
+
+const highBtn =
+    document.getElementById("highBtn");
+
+
+/* =========================================================
+   PLAYER POSITION
+========================================================= */
+
+let x = 50;
+let y = 60;
+
+let remoteX = 50;
+let remoteY = 60;
+
+let previousRemoteX = 50;
+let previousRemoteY = 60;
+
+
+/* =========================================================
+   MOVEMENT
+========================================================= */
+
+const keys = {};
+
+document.addEventListener("keydown", e => {
+
+    const key = e.key.toLowerCase();
+
+    if(
+        key === "w" ||
+        key === "a" ||
+        key === "s" ||
+        key === "d"
+    ){
+        keys[key] = true;
+        e.preventDefault();
+    }
+
+});
+
+document.addEventListener("keyup", e => {
+
+    const key = e.key.toLowerCase();
+
+    if(
+        key === "w" ||
+        key === "a" ||
+        key === "s" ||
+        key === "d"
+    ){
+        keys[key] = false;
+    }
+
+});
+
+
+/* =========================================================
+   NETWORK SETTINGS
+========================================================= */
+
+let highPing = false;
+
+
+/*
+    This is NOT real Roblox networking.
+
+    It is a visual approximation showing:
+
+    YOUR GAME
+        ↓
+      SERVER
+        ↓
+    OTHER GAME
+
+    Higher delay = older position remains visible
+    for longer on the other screen.
+*/
+
+let networkSpeed = 0.12;
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+normalBtn.onclick = () => {
+
+    highPing = false;
+
+    networkSpeed = 0.12;
+
+    normalBtn.classList.add("active");
+    highBtn.classList.remove("active");
+
+};
+
+highBtn.onclick = () => {
+
+    highPing = true;
+
+    networkSpeed = 0.025;
+
+    highBtn.classList.add("active");
+    normalBtn.classList.remove("active");
+
+};
+
+
+/* =========================================================
+   UPDATE MOVEMENT
+========================================================= */
+
+function update(){
+
+    let dx = 0;
+    let dy = 0;
+
+    if(keys["a"]) dx -= 1;
+    if(keys["d"]) dx += 1;
+    if(keys["w"]) dy -= 1;
+    if(keys["s"]) dy += 1;
+
+
+    /* Normalize diagonal movement */
+
+    if(dx !== 0 || dy !== 0){
+
+        const length =
+            Math.sqrt(dx * dx + dy * dy);
+
+        dx /= length;
+        dy /= length;
+
+    }
+
+
+    /* Your screen updates immediately */
+
+    const speed = 0.75;
+
+    x += dx * speed;
+    y += dy * speed;
+
+
+    /* Keep player inside world */
+
+    x = Math.max(8, Math.min(92, x));
+    y = Math.max(12, Math.min(88, y));
+
+
+    /*
+        Other player's screen receives
+        the position more slowly.
+
+        This is the important part.
+
+        Normal:
+        remote catches up quickly.
+
+        High:
+        remote catches up slowly.
+    */
+
+    previousRemoteX = remoteX;
+    previousRemoteY = remoteY;
+
+    remoteX +=
+        (x - remoteX) * networkSpeed;
+
+    remoteY +=
+        (y - remoteY) * networkSpeed;
+
+
+    render();
+
+    requestAnimationFrame(update);
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function render(){
+
+    /*
+        YOUR SCREEN
+    */
+
+    localPlayer.style.left = x + "%";
+    localPlayer.style.top = y + "%";
+
+
+    /*
+        OTHER SCREEN
+    */
+
+    remotePlayer.style.left = remoteX + "%";
+    remotePlayer.style.top = remoteY + "%";
+
+
+    /*
+        Show where the other screen
+        was previously displaying you.
+    */
+
+    lastPosition.style.left =
+        remoteX + "%";
+
+    lastPosition.style.top =
+        remoteY + "%";
+
+
+    /*
+        Put label slightly below player
+    */
+
+    lastLabel.style.left =
+        remoteX + "%";
+
+    lastLabel.style.top =
+        (remoteY + 11) + "%";
+
+
+    /*
+        Hide label when almost perfectly synced.
+    */
+
+    const difference =
+        Math.abs(x - remoteX) +
+        Math.abs(y - remoteY);
+
+    if(difference < 2){
+
+        lastPosition.style.opacity = "0";
+        lastLabel.style.opacity = "0";
+
+    }else{
+
+        lastPosition.style.opacity = "1";
+        lastLabel.style.opacity = "1";
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+render();
+update();
+
+</script>
+
+</body>
+</html>
