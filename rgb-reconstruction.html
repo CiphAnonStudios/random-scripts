@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>RGB Reconstruction</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#07080b;
+    --panel:#111318;
+    --border:#282c34;
+    --text:#f5f5f7;
+    --muted:#858a94;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 50% -20%,#20242d 0,#07080b 45%);
+    color:var(--text);
+    font-family:Inter,Arial,sans-serif;
+    padding:24px;
+}
+
+.app{
+    width:min(1150px,100%);
+    margin:auto;
+}
+
+header{
+    text-align:center;
+    margin:10px 0 24px;
+}
+
+h1{
+    font-size:clamp(28px,5vw,42px);
+    letter-spacing:-1.5px;
+}
+
+header p{
+    color:var(--muted);
+    margin-top:8px;
+}
+
+.panel{
+    background:rgba(17,19,24,.92);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.upload{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:58px;
+
+    border:1px dashed #454b56;
+    border-radius:14px;
+
+    color:#d7dae0;
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.upload:hover{
+    background:#191c22;
+    border-color:#727985;
+}
+
+input[type=file]{
+    display:none;
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:15px;
+}
+
+.control{
+    background:#0d0f13;
+    border:1px solid #252932;
+    border-radius:14px;
+    padding:14px;
+}
+
+.controlTop{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.controlTop span:first-child{
+    color:#aaaeb7;
+}
+
+.controlTop span:last-child{
+    font-weight:bold;
+}
+
+input[type=range]{
+    width:100%;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+button{
+    flex:1;
+    border:1px solid #30343d;
+    background:#1a1d23;
+    color:white;
+    padding:12px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+button:hover{
+    background:#242830;
+}
+
+button.active{
+    background:#30353e;
+}
+
+.viewer{
+    position:relative;
+
+    width:100%;
+    min-height:430px;
+
+    background:#000;
+
+    border:1px solid var(--border);
+    border-radius:22px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    overflow:hidden;
+
+    box-shadow:
+        inset 0 0 80px rgba(0,0,0,.65),
+        0 25px 80px rgba(0,0,0,.3);
+}
+
+canvas{
+    display:block;
+    max-width:100%;
+    max-height:70vh;
+
+    width:auto;
+    height:auto;
+}
+
+.status{
+    position:absolute;
+    left:14px;
+    bottom:14px;
+
+    padding:7px 10px;
+
+    border-radius:9px;
+
+    background:rgba(0,0,0,.65);
+    backdrop-filter:blur(8px);
+
+    color:#aeb3bd;
+    font-size:12px;
+}
+
+.legend{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+
+    margin-top:15px;
+
+    color:#777c85;
+    font-size:12px;
+}
+
+.legend span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.dot{
+    width:8px;
+    height:8px;
+    border-radius:2px;
+}
+
+.red{background:#ff2020}
+.green{background:#20ff55}
+.blue{background:#287aff}
+
+@media(max-width:700px){
+
+    body{
+        padding:12px;
+    }
+
+    .controls{
+        grid-template-columns:1fr;
+    }
+
+    .viewer{
+        min-height:300px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+    <h1>RGB Reconstruction</h1>
+    <p>Watch an image form from individual display subpixels.</p>
+</header>
+
+
+<div class="panel">
+
+    <label class="upload">
+
+        <input
+            type="file"
+            id="file"
+            accept="image/*"
+        >
+
+        📷 Upload an image
+
+    </label>
+
+
+    <div class="controls">
+
+        <div class="control">
+
+            <div class="controlTop">
+                <span>Resolution</span>
+                <span id="resolutionText">1%</span>
+            </div>
+
+            <input
+                type="range"
+                id="resolution"
+                min="1"
+                max="100"
+                value="1"
+            >
+
+        </div>
+
+
+        <div class="control">
+
+            <div class="controlTop">
+                <span>RGB Size</span>
+                <span id="sizeText">1×</span>
+            </div>
+
+            <input
+                type="range"
+                id="rgbSize"
+                min="1"
+                max="5"
+                value="1"
+                step=".1"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="buttons">
+
+        <button id="build">
+            ▶ Build Image
+        </button>
+
+        <button id="normal">
+            Normal Image
+        </button>
+
+        <button id="rgb">
+            RGB View
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="viewer">
+
+    <canvas id="canvas"></canvas>
+
+    <div class="status" id="status">
+        RGB reconstruction · 1%
+    </div>
+
+</div>
+
+
+<div class="legend">
+
+    <span>
+        <i class="dot red"></i>
+        Red
+    </span>
+
+    <span>
+        <i class="dot green"></i>
+        Green
+    </span>
+
+    <span>
+        <i class="dot blue"></i>
+        Blue
+    </span>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+const file =
+    document.getElementById("file");
+
+const resolution =
+    document.getElementById("resolution");
+
+const rgbSize =
+    document.getElementById("rgbSize");
+
+const resolutionText =
+    document.getElementById("resolutionText");
+
+const sizeText =
+    document.getElementById("sizeText");
+
+const status =
+    document.getElementById("status");
+
+const buildButton =
+    document.getElementById("build");
+
+const normalButton =
+    document.getElementById("normal");
+
+const rgbButton =
+    document.getElementById("rgb");
+
+
+let image =
+    new Image();
+
+let mode =
+    "rgb";
+
+let animation =
+    null;
+
+
+/* =====================================================
+   EXAMPLE IMAGE
+===================================================== */
+
+function createExample(){
+
+    const c =
+        document.createElement("canvas");
+
+    c.width = 1000;
+    c.height = 620;
+
+    const x =
+        c.getContext("2d");
+
+
+    /* SKY */
+
+    const sky =
+        x.createLinearGradient(
+            0,
+            0,
+            0,
+            620
+        );
+
+    sky.addColorStop(
+        0,
+        "#11194f"
+    );
+
+    sky.addColorStop(
+        .42,
+        "#65407d"
+    );
+
+    sky.addColorStop(
+        1,
+        "#ff9c52"
+    );
+
+    x.fillStyle =
+        sky;
+
+    x.fillRect(
+        0,
+        0,
+        1000,
+        620
+    );
+
+
+    /* SUN */
+
+    x.shadowColor =
+        "#ffe477";
+
+    x.shadowBlur =
+        30;
+
+    x.fillStyle =
+        "#ffe477";
+
+    x.beginPath();
+
+    x.arc(
+        500,
+        245,
+        100,
+        0,
+        Math.PI * 2
+    );
+
+    x.fill();
+
+    x.shadowBlur = 0;
+
+
+    /* BACK MOUNTAINS */
+
+    x.fillStyle =
+        "#49386b";
+
+    x.beginPath();
+
+    x.moveTo(0,470);
+
+    x.lineTo(160,300);
+    x.lineTo(310,420);
+
+    x.lineTo(500,220);
+    x.lineTo(690,405);
+
+    x.lineTo(820,290);
+    x.lineTo(1000,450);
+
+    x.lineTo(1000,620);
+    x.lineTo(0,620);
+
+    x.closePath();
+
+    x.fill();
+
+
+    /* FRONT MOUNTAINS */
+
+    x.fillStyle =
+        "#22253b";
+
+    x.beginPath();
+
+    x.moveTo(0,510);
+
+    x.lineTo(230,350);
+    x.lineTo(410,470);
+
+    x.lineTo(610,310);
+    x.lineTo(1000,505);
+
+    x.lineTo(1000,620);
+    x.lineTo(0,620);
+
+    x.closePath();
+
+    x.fill();
+
+
+    /* GROUND */
+
+    x.fillStyle =
+        "#091116";
+
+    x.fillRect(
+        0,
+        520,
+        1000,
+        100
+    );
+
+
+    /* STARS */
+
+    x.fillStyle =
+        "#fff";
+
+    const stars = [
+
+        [90,90],
+        [190,145],
+        [300,70],
+        [650,100],
+        [770,60],
+        [870,145],
+        [710,170],
+        [400,115],
+        [920,80],
+        [560,90]
+
+    ];
+
+    for(
+        const [sx,sy]
+        of stars
+    ){
+
+        x.beginPath();
+
+        x.arc(
+            sx,
+            sy,
+            2.5,
+            0,
+            Math.PI * 2
+        );
+
+        x.fill();
+
+    }
+
+
+    return c.toDataURL();
+}
+
+
+/* =====================================================
+   INITIAL IMAGE
+===================================================== */
+
+image.onload =
+    render;
+
+image.src =
+    createExample();
+
+
+/* =====================================================
+   UPLOAD
+===================================================== */
+
+file.addEventListener(
+    "change",
+    function(){
+
+        const selected =
+            this.files[0];
+
+        if(!selected)
+            return;
+
+
+        const url =
+            URL.createObjectURL(
+                selected
+            );
+
+
+        image.onload =
+            function(){
+
+                URL.revokeObjectURL(url);
+
+                resolution.value = 1;
+
+                render();
+
+            };
+
+
+        image.src =
+            url;
+    }
+);
+
+
+/* =====================================================
+   CONTROLS
+===================================================== */
+
+resolution.addEventListener(
+    "input",
+    render
+);
+
+rgbSize.addEventListener(
+    "input",
+    render
+);
+
+
+/* =====================================================
+   BUILD ANIMATION
+===================================================== */
+
+buildButton.addEventListener(
+    "click",
+    function(){
+
+        if(animation)
+            cancelAnimationFrame(animation);
+
+
+        mode =
+            "rgb";
+
+        rgbButton.classList.add("active");
+        normalButton.classList.remove("active");
+
+
+        let start =
+            performance.now();
+
+
+        function animate(time){
+
+            const elapsed =
+                time - start;
+
+
+            /*
+               Around 5 seconds.
+            */
+
+            const progress =
+                Math.min(
+                    elapsed / 5000,
+                    1
+                );
+
+
+            /*
+               Ease-out curve.
+
+               Starts slowly,
+               then rapidly adds detail.
+            */
+
+            const eased =
+                1 -
+                Math.pow(
+                    1 - progress,
+                    2.2
+                );
+
+
+            const value =
+                1 +
+                eased * 99;
+
+
+            resolution.value =
+                value;
+
+
+            render();
+
+
+            if(progress < 1){
+
+                animation =
+                    requestAnimationFrame(
+                        animate
+                    );
+
+            }else{
+
+                mode =
+                    "normal";
+
+                render();
+
+            }
+
+        }
+
+
+        animation =
+            requestAnimationFrame(
+                animate
+            );
+
+    }
+);
+
+
+/* =====================================================
+   NORMAL BUTTON
+===================================================== */
+
+normalButton.addEventListener(
+    "click",
+    function(){
+
+        if(animation)
+            cancelAnimationFrame(animation);
+
+        mode =
+            "normal";
+
+        normalButton.classList.add("active");
+        rgbButton.classList.remove("active");
+
+        render();
+
+    }
+);
+
+
+/* =====================================================
+   RGB BUTTON
+===================================================== */
+
+rgbButton.addEventListener(
+    "click",
+    function(){
+
+        if(animation)
+            cancelAnimationFrame(animation);
+
+        mode =
+            "rgb";
+
+        rgbButton.classList.add("active");
+        normalButton.classList.remove("active");
+
+        render();
+
+    }
+);
+
+
+/* =====================================================
+   RENDER
+===================================================== */
+
+function render(){
+
+    if(
+        !image.complete ||
+        !image.naturalWidth
+    )
+        return;
+
+
+    const detail =
+        Number(
+            resolution.value
+        );
+
+
+    const rgbScale =
+        Number(
+            rgbSize.value
+        );
+
+
+    resolutionText.textContent =
+        Math.round(detail) + "%";
+
+    sizeText.textContent =
+        rgbScale.toFixed(1) + "×";
+
+
+    status.textContent =
+        mode === "normal"
+        ? "Normal image"
+        : "RGB reconstruction · "
+          + Math.round(detail)
+          + "%";
+
+
+    if(mode === "normal"){
+
+        drawNormal();
+
+        return;
+
+    }
+
+
+    drawRGB(
+        detail,
+        rgbScale
+    );
+
+}
+
+
+/* =====================================================
+   NORMAL IMAGE
+===================================================== */
+
+function drawNormal(){
+
+    canvas.width =
+        image.naturalWidth;
+
+    canvas.height =
+        image.naturalHeight;
+
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.imageSmoothingEnabled =
+        true;
+
+
+    ctx.drawImage(
+        image,
+        0,
+        0
+    );
+
+}
+
+
+/* =====================================================
+   RGB RECONSTRUCTION
+===================================================== */
+
+function drawRGB(
+    detail,
+    rgbScale
+){
+
+    /*
+       Keep rendering manageable
+       on very large photographs.
+    */
+
+    const MAX_SAMPLES =
+        140000;
+
+
+    let sampleWidth =
+        Math.max(
+            1,
+            Math.round(
+                image.naturalWidth *
+                detail /
+                100
+            )
+        );
+
+
+    let sampleHeight =
+        Math.max(
+            1,
+            Math.round(
+                image.naturalHeight *
+                detail /
+                100
+            )
+        );
+
+
+    const total =
+        sampleWidth *
+        sampleHeight;
+
+
+    if(total > MAX_SAMPLES){
+
+        const factor =
+            Math.sqrt(
+                MAX_SAMPLES /
+                total
+            );
+
+        sampleWidth =
+            Math.max(
+                1,
+                Math.floor(
+                    sampleWidth *
+                    factor
+                )
+            );
+
+        sampleHeight =
+            Math.max(
+                1,
+                Math.floor(
+                    sampleHeight *
+                    factor
+                )
+            );
+
+    }
+
+
+    /*
+       Source image at current
+       RGB sampling resolution.
+    */
+
+    const source =
+        document.createElement(
+            "canvas"
+        );
+
+    source.width =
+        sampleWidth;
+
+    source.height =
+        sampleHeight;
+
+
+    const sourceCtx =
+        source.getContext("2d");
+
+
+    sourceCtx.imageSmoothingEnabled =
+        true;
+
+
+    sourceCtx.drawImage(
+        image,
+        0,
+        0,
+        sampleWidth,
+        sampleHeight
+    );
+
+
+    const pixels =
+        sourceCtx.getImageData(
+            0,
+            0,
+            sampleWidth,
+            sampleHeight
+        ).data;
+
+
+    /*
+       Output canvas.
+    */
+
+    canvas.width =
+        image.naturalWidth;
+
+    canvas.height =
+        image.naturalHeight;
+
+
+    ctx.fillStyle =
+        "#000";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    const cellWidth =
+        canvas.width /
+        sampleWidth;
+
+    const cellHeight =
+        canvas.height /
+        sampleHeight;
+
+
+    /*
+       Gap between physical-looking
+       RGB subpixels.
+
+       Larger at low resolutions.
+    */
+
+    const gap =
+        detail < 8
+        ? Math.min(
+            cellWidth * .055,
+            3
+        )
+        : Math.min(
+            cellWidth * .012,
+            1
+        );
+
+
+    /*
+       Subpixel width.
+
+       Each image sample is:
+
+       | RED | GREEN | BLUE |
+    */
+
+    const available =
+        Math.max(
+            .1,
+            cellWidth - gap * 2
+        );
+
+
+    const baseWidth =
+        available / 3;
+
+
+    const subpixelWidth =
+        Math.min(
+            baseWidth * rgbScale,
+            baseWidth
+        );
+
+
+    /*
+       Slightly center RGB group.
+    */
+
+    const groupWidth =
+        subpixelWidth * 3;
+
+
+    const groupOffset =
+        (cellWidth - groupWidth) / 2;
+
+
+    /*
+       Low-res RGB display.
+    */
+
+    for(
+        let y = 0;
+        y < sampleHeight;
+        y++
+    ){
+
+        const py =
+            y * cellHeight;
+
+
+        for(
+            let x = 0;
+            x < sampleWidth;
+            x++
+        ){
+
+            const i =
+                (
+                    y *
+                    sampleWidth +
+                    x
+                ) * 4;
+
+
+            const r =
+                pixels[i];
+
+            const g =
+                pixels[i + 1];
+
+            const b =
+                pixels[i + 2];
+
+            const px =
+                x * cellWidth +
+                groupOffset;
+
+
+            const h =
+                Math.max(
+                    .1,
+                    cellHeight -
+                    gap * 2
+                );
+
+
+            /*
+               RED
+            */
+
+            ctx.fillStyle =
+                `rgb(${r},0,0)`;
+
+            ctx.fillRect(
+                px,
+                py + gap,
+                subpixelWidth,
+                h
+            );
+
+
+            /*
+               GREEN
+            */
+
+            ctx.fillStyle =
+                `rgb(0,${g},0)`;
+
+            ctx.fillRect(
+                px + subpixelWidth,
+                py + gap,
+                subpixelWidth,
+                h
+            );
+
+
+            /*
+               BLUE
+            */
+
+            ctx.fillStyle =
+                `rgb(0,0,${b})`;
+
+            ctx.fillRect(
+                px + subpixelWidth * 2,
+                py + gap,
+                subpixelWidth,
+                h
+            );
+
+        }
+
+    }
+
+
+    /*
+       As we approach full resolution,
+       blend toward the actual image.
+
+       This creates a natural transition
+       instead of suddenly switching.
+    */
+
+    if(detail > 60){
+
+        const blend =
+            Math.min(
+                1,
+                (detail - 60) / 40
+            );
+
+
+        ctx.globalAlpha =
+            blend;
+
+
+        ctx.imageSmoothingEnabled =
+            true;
+
+
+        ctx.drawImage(
+            image,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        ctx.globalAlpha =
+            1;
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
